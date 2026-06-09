@@ -1,0 +1,76 @@
+1. Modélisation de la base de données
+Entités principales
+
+Utilisateur (candidat ou recruteur)
+Entreprise
+Offre d'emploi
+Candidature
+Compétence
+
+Les 3 relations exigées
+Relation
+
+RelationEntitésTypeUn utilisateur a un seul profil détailléUtilisateur ↔ Profil1–1Une entreprise publie plusieurs offresEntreprise → Offre1–NUn candidat postule à plusieurs offres, une offre reçoit plusieurs candidatsCandidat ↔ OffreN–NUne offre requiert plusieurs compétences, une compétence apparaît dans plusieurs offresOffre ↔ CompétenceN–N
+
+2. Schéma relationnel
+Utilisateur (id, email, password, role, created_at)
+Profil (id, utilisateur_id[FK, UNIQUE], nom, prenom, cv_path, telephone)
+Entreprise (id, nom, secteur, ville, recruteur_id[FK])
+Offre (id, entreprise_id[FK], titre, description, localisation, salaire, date_publication)
+Candidature (candidat_id[FK], offre_id[FK], date_candidature, statut)  ← table pivot N–N
+Competence (id, libelle)
+Offre_Competence (offre_id[FK], competence_id[FK])  ← table pivot N–N
+
+
+3. Architecture des fichiers
+
+search-for-a-job/
+│
+├── config/
+│   └── database.php          # Connexion PDO
+│
+├── public/
+│   ├── index.php             # Page d'accueil / liste des offres
+│   ├── login.php
+│   ├── register.php
+│   ├── offre.php             # Détail d'une offre
+│   ├── dashboard-candidat.php
+│   └── dashboard-recruteur.php
+│
+├── src/
+│   ├── Auth.php              # Gestion sessions / auth
+│   ├── OffreModel.php        # CRUD offres via PDO
+│   ├── CandidatureModel.php
+│   ├── UserModel.php
+│   └── EntrepriseModel.php
+│
+├── assets/
+│   ├── css/
+│   ├── js/
+│   └── uploads/             # CV uploadés
+│
+├── sql/
+│   └── schema.sql
+│
+├── README.md
+└── .gitignore
+
+
+
+4. Fonctionnalités à implémenter
+
+Côté candidat
+=============
+
+Inscription / connexion
+Compléter son profil + upload CV
+Rechercher des offres (par titre, ville, compétence)
+Postuler à une offre
+Suivre ses candidatures (statut : en attente / accepté / refusé)
+
+Côté recruteur
+==============
+
+Créer / gérer son entreprise
+Publier / modifier / supprimer des offres
+Consulter les candidatures reçues et changer leur statut
