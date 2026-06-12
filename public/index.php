@@ -22,14 +22,6 @@ $total   = $model->compterOffres($filtres);
 $nbPages = (int) ceil($total / $parPage);
 $offres  = $model->listerOffres($filtres, $page, $parPage);
 
-// Helper pour afficher le salaire
-function formatSalaire(?float $min, ?float $max): string
-{
-    if (!$min && !$max) return 'Salaire non précisé';
-    if ($min && $max)   return number_format($min, 0, ',', ' ') . ' – ' . number_format($max, 0, ',', ' ') . ' €';
-    if ($min)           return 'À partir de ' . number_format($min, 0, ',', ' ') . ' €';
-    return "Jusqu'à " . number_format($max, 0, ',', ' ') . ' €';
-}
 
 // Badge couleur selon le type de contrat
 function badgeContrat(string $type): string
@@ -215,9 +207,13 @@ function urlPage(int $page): string
       </div>
     <?php else: ?>
 
+      
+        
+
     <ul class="offers-list">
+      
       <?php foreach ($offres as $i => $offre): ?>
-      <li>
+        <li>
         <article class="offer-card <?= $i === 0 ? 'featured' : '' ?>">
           <a href="offre.php?id=<?= $offre['id'] ?>" class="offer-link">
             <div class="d-flex align-items-start gap-3">
@@ -243,19 +239,19 @@ function urlPage(int $page): string
 
             <footer class="offer-footer">
               <span class="offer-location"><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= htmlspecialchars($offre['localisation']) ?></span>
-              <strong class="offer-salary"><?= formatSalaire($offre['salaire_min'], $offre['salaire_max']) ?></strong>
+              <strong class="offer-salary"><?= (int)$offre['salaire_min'] ?> - <?= (int)$offre['salaire_max']?>€</strong>
               <time class="offer-date" datetime="<?= $offre['date_publication'] ?>">
                 <?= dateRelative($offre['date_publication']) ?>
               </time>
             </footer>
+            
           </a>
         </article>
-      </li>
+      </li> 
+       
       <?php endforeach; ?>
+  </ul>
 
-
-
-    </ul>
 
     <!-- PAGINATION -->
     <?php if ($nbPages > 1): ?>
@@ -279,6 +275,44 @@ function urlPage(int $page): string
     <?php endif; ?>
   </section>
 </main>
+<footer class="site-footer">
+    <div class="container">
+
+        <div class="footer-grid">
+
+            <div>
+                <h3>SearchForAJob</h3>
+                <p>
+                    Trouvez rapidement les meilleures offres
+                    d'emploi partout en France.
+                </p>
+            </div>
+
+            <div>
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="#">Offres</a></li>
+                    <li><a href="#">Entreprises</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Contact</h4>
+                <p>contact@searchforajob.fr</p>
+                <p>+33 1 23 45 67 89</p>
+            </div>
+
+        </div>
+
+        <hr>
+
+        <p class="copyright">
+            © 2025 SearchForAJob - Tous droits réservés.
+        </p>
+
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/index.js"></script>

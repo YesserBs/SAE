@@ -142,13 +142,14 @@ section.stats-bar li strong {
 }
 
 /* MAIN LAYOUT */
-main.main-layout { 
-    max-width: 1100px; 
-    margin: 2rem auto; 
-    padding: 0 1rem; 
-    display: grid; 
-    grid-template-columns: 240px 1fr; 
-    gap: 1.5rem; 
+.main-layout{
+    max-width:1600px;
+    margin:50px auto;
+    padding:0 30px;
+
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:35px;
 }
 
 /* ASIDE FILTRES */
@@ -377,4 +378,62 @@ nav.pagination-nav .page-link:hover {
     .search-box select { 
         display: none; 
     }
+}
+
+
+.site-footer{
+    margin-top:80px;
+
+    background:#200646;
+
+    color:white;
+
+    padding:60px 0 25px;
+}
+
+.footer-container{
+    max-width:1200px;
+    margin:auto;
+    padding:0 20px;
+}
+
+.footer-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(auto-fit,minmax(250px,1fr));
+
+    gap:40px;
+}
+
+.site-footer h3,
+.site-footer h4{
+    margin-bottom:15px;
+}
+
+.site-footer ul{
+    list-style:none;
+    padding:0;
+}
+
+.site-footer li{
+    margin-bottom:10px;
+}
+
+.site-footer a{
+    color:#cbd5e1;
+}
+
+.site-footer a:hover{
+    color:white;
+}
+
+.site-footer hr{
+    margin:30px 0;
+    border-color:rgba(255,255,255,.1);
+}
+
+.copyright{
+    text-align:center;
+    color:#94a3b8;
 }
