@@ -1,0 +1,4 @@
+# ignorer le fichier de configuration de la base de données
+config/database.php
+# ignorer le fichier .env
+backend/.env

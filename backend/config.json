@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Les offres en France",
+    "description": "On utilisera ces données pour l'instant. https://api.adzuna.com/v1/api/jobs/{country}/search/{page}",
+    "champs": [
+      {
+        "url": "https://api.adzuna.com/v1/api/jobs/{country}/search/{page}",
+        "country": "fr",
+        "page": 1,
+        "results_per_page": 20,
+        "what": "developer",
+        "where": "Paris",
+        "what_and": "",
+        "what_phrase": "",
+        "what_or": "",
+        "what_exclude": "",
+        "title_only": "",
+        "distance": "",
+        "location0": "",
+        "location1": "",
+        "location2": "",
+        "location3": "",
+        "location4": "",
+        "location5": "",
+        "location6": "",
+        "location7": "",
+        "category": "",
+        "sort_dir": "",
+        "sort_by": "",
+        "salary_min": "",
+        "salary_max": "",
+        "salary_include_unknown": "",
+        "full_time": "",
+        "part_time": "",
+        "contract": "",
+        "permanent": "",
+        "company": ""
+      }
+    ]
+  }
+]
