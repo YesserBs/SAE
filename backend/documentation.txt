@@ -1,0 +1,6 @@
+On avance sur la partie call api -> enregistrement
+après je pense que je vais faire partie utilisateurs
+ensuite partie correespendance meilleurs offres etc..
+- il y a la partie utilisateurs
+- en fin la partie la plus interessante qui est le llm qui va aider à scrap les offres on lui donne la structure, un chunck du fichier, et lui il nous dit ce qu'il faut faire pour 
+scrap le site
