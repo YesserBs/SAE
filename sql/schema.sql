@@ -190,3 +190,8 @@ INSERT INTO candidature (candidat_id, offre_id, statut) VALUES
   (1, 1, 'En attente'),
   (1, 2, 'Vue'),
   (2, 1, 'Acceptee');
+
+
+
+  -- ajout un champ qui permet de televerser un cv
+  ALTER TABLE candidature ADD COLUMN cv_path VARCHAR(255) DEFAULT NULL;

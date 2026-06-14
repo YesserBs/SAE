@@ -22,7 +22,6 @@ $total   = $model->compterOffres($filtres);
 $nbPages = (int) ceil($total / $parPage);
 $offres  = $model->listerOffres($filtres, $page, $parPage);
 
-
 // Badge couleur selon le type de contrat
 function badgeContrat(string $type): string
 {
@@ -49,12 +48,25 @@ function badgeTeletravail(string $t): string
 // Formate la date relative
 function dateRelative(string $date): string
 {
-    $diff = time() - strtotime($date);
-    if ($diff < 86400)    return "Aujourd'hui";
-    if ($diff < 172800)   return "Hier";
-    if ($diff < 604800)   return "Il y a " . round($diff / 86400)  . " jours";
-    if ($diff < 2592000)  return "Il y a " . round($diff / 604800) . " semaines";
-    return "Il y a " . round($diff / 2592000) . " mois";
+    $jours = floor((time() - strtotime($date)) / 86400);
+
+    if ($jours == 0) {
+        return "Aujourd'hui";
+    }
+
+    if ($jours == 1) {
+        return "Hier";
+    }
+
+    if ($jours < 7) {
+        return "Il y a $jours jours";
+    }
+
+    if ($jours < 30) {
+        return "Il y a " . floor($jours / 7) . " semaines";
+    }
+
+    return "Il y a " . floor($jours / 30) . " mois";
 }
 
 // Construction de l'URL de pagination avec les filtres actifs
@@ -100,7 +112,7 @@ function urlPage(int $page): string
         <a href="logout.php" class="btn btn-publier">Déconnexion</a>
       <?php else: ?>
         <a href="login.php"            class="btn btn-connexion">Connexion</a>
-        <a href="register.php?role=recruteur" class="btn btn-publier">Publier une offre</a>
+        <a href="register.php?role=recruteur" class="btn btn-publier">Créer un compte</a>
       <?php endif; ?>
     </div>
   </div>
@@ -239,7 +251,7 @@ function urlPage(int $page): string
 
             <footer class="offer-footer">
               <span class="offer-location"><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= htmlspecialchars($offre['localisation']) ?></span>
-              <strong class="offer-salary"><?= (int)$offre['salaire_min'] ?> - <?= (int)$offre['salaire_max']?>€</strong>
+              <strong class="offer-salary"><?= (int)$offre['salaire_min'] == 0 ? 'salaire non':(int)$offre['salaire_min'] ?> - <?= (int)$offre['salaire_max'] == 0 ? 'renseigné' : (int)$offre['salaire_max']?> <?=  (int)$offre['salaire_max'] == 0 ? ' ': '€'  ?></strong>
               <time class="offer-date" datetime="<?= $offre['date_publication'] ?>">
                 <?= dateRelative($offre['date_publication']) ?>
               </time>

@@ -49,18 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Connexion — SearchForAJob</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  <style>
-    :root { --blue-main: #185FA5; --blue-dark: #0C447C; --blue-light: #E6F1FB; }
-    body  { background: #F4F6F9; font-family: 'Segoe UI', system-ui, sans-serif; }
-    .card-auth { max-width: 420px; margin: 4rem auto; background: #fff; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08); padding: 2rem; }
-    .brand     { font-size: 1.2rem; font-weight: 700; color: #1a1a2e; }
-    .brand span { color: var(--blue-main); }
-    .btn-primary-custom { background: var(--blue-main); color: #fff; border: none; border-radius: 7px; padding: 10px; width: 100%; font-size: 0.95rem; }
-    .btn-primary-custom:hover { background: var(--blue-dark); color: #fff; }
-    label { font-size: 0.875rem; font-weight: 500; margin-bottom: 4px; }
-    .form-control { font-size: 0.875rem; border-radius: 7px; border: 1px solid rgba(0,0,0,0.15); }
-    .form-control:focus { border-color: var(--blue-main); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
-  </style>
+  <link rel="stylesheet" href="../assets/css/login.css">
 </head>
 <body>
 

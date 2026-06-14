@@ -15,7 +15,7 @@ class CandidatureModel
     // --------------------------------------------------------
     //  POSTULER à une offre
     // --------------------------------------------------------
-    public function postuler(int $candidatId, int $offreId, string $lettre = ''): bool
+    public function postuler(int $candidatId, int $offreId, string $lettre = '', ?string $cvPath = null): bool
     {
         // Vérifie qu'il n'a pas déjà postulé
         if ($this->aDejaPostule($candidatId, $offreId)) {
@@ -23,13 +23,14 @@ class CandidatureModel
         }
 
         $stmt = $this->pdo->prepare("
-            INSERT INTO candidature (candidat_id, offre_id, lettre_motivation)
-            VALUES (:cid, :oid, :lettre)
+            INSERT INTO candidature (candidat_id, offre_id, lettre_motivation, cv_path)
+            VALUES (:cid, :oid, :lettre, :cv_path)
         ");
         $stmt->execute([
-            ':cid'    => $candidatId,
-            ':oid'    => $offreId,
-            ':lettre' => $lettre,
+            ':cid'     => $candidatId,
+            ':oid'     => $offreId,
+            ':lettre'  => $lettre,
+            ':cv_path' => $cvPath,
         ]);
         return true;
     }
@@ -60,7 +61,8 @@ class CandidatureModel
     {
         $stmt = $this->pdo->prepare("
             SELECT c.candidat_id, c.statut, c.date_candidature, c.lettre_motivation,
-                   p.nom, p.prenom, p.telephone, p.cv_path,
+                   c.cv_path,
+                   p.nom, p.prenom, p.telephone,
                    u.email
             FROM candidature c
             INNER JOIN utilisateur u ON u.id = c.candidat_id

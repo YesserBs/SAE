@@ -11,7 +11,7 @@ define('DB_HOST',    'localhost');
 define('DB_PORT',    '3306');
 define('DB_NAME',    'searchforajob');
 define('DB_USER',    'root');       // utilisateur par défaut XAMPP
-define('DB_PASS',    'admin');           // mot de passe vide par défaut XAMPP
+define('DB_PASS',    'root');           // mot de passe vide par défaut XAMPP
 define('DB_CHARSET', 'utf8mb4');
 // ------------------------------------------------------------
 
@@ -44,10 +44,15 @@ function getPDO(): PDO
 
             // Désactive l'émulation des requêtes préparées :
             // les vraies requêtes préparées côté serveur sont plus sûres
-            PDO::ATTR_EMULATE_PREPARES   => true,
+            PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        try {
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        } 
+        catch (PDOException $e) {
+        die('Erreur de connexion à la base de données.');
+        }
     }
 
     return $pdo;
