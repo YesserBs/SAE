@@ -3,54 +3,24 @@
 declare(strict_types=1);
 
 /*
-L'objectif est de charger les données de l'API Adzuna,
-de les transformer en DTO, puis de les enregistrer dans la table adzuna_job_offer.
+Maintenant il est temps d'utiliser une librairie qui va nous permetre de gérer les dépendances
+pour avoir le .env et les clés API dans un fichier séparé. Pour cela, on va utiliser Composer.
+https://getcomposer.org/download/
+Installer et il faudrait l'avoir sur le path
+Une fois installé check si c'est bon :
+composer --version
+ensuite une fois que tt est bon, dans ton projet execute la cmd :
+composer require vlucas/phpdotenv
 
-NOTE :
-Pour aller vite dans ce projet, on met APP_ID et APP_KEY directement en dur
-dans le code. On ignore volontairement l'aspect sécurité / confidentialité
-des clés API pour cette version rapide.
+---
 
-On met aussi la connexion PDO directement dans ce fichier pour éviter les problèmes
-de chemins avec require_once. Plus tard, on pourra remettre ça proprement dans
-un fichier database.php ou un repository.
+l'équivalent d'un npm install ici c'est :
+composer install
+indispensable pour installer les dépendances du projet.
+
 */
 
-// ============================================================
-//  Connexion PDO — WAMP / XAMPP / MySQL / MariaDB
-// ============================================================
-
-define('DB_HOST',    'localhost');
-define('DB_PORT',    '3306');
-define('DB_NAME',    'searchforajob');
-define('DB_USER',    'root');
-define('DB_PASS',    'admin');
-define('DB_CHARSET', 'utf8mb4');
-
-function getPDO(): PDO
-{
-    static $pdo = null;
-
-    if ($pdo === null) {
-        $dsn = sprintf(
-            'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-            DB_HOST,
-            DB_PORT,
-            DB_NAME,
-            DB_CHARSET
-        );
-
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => true,
-        ];
-
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-    }
-
-    return $pdo;
-}
+require_once __DIR__ . '/../config/database.php';
 
 // ============================================================
 //  DTO
@@ -392,9 +362,13 @@ echo "<body>";
 try {
     $pdo = getPDO();
 
-    // Clés API mises en dur pour aller vite dans ce projet.
-    $appId = '9b8adf41';
-    $appKey = 'd2cf6c9c63a7b533a4d0198e00f72274';
+    require __DIR__ . '/vendor/autoload.php';
+
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+
+    $appId = $_ENV['APP_ID'];
+    $appKey = $_ENV['API_KEY'];
 
     $config = loadConfig(__DIR__ . '/config.json');
 
