@@ -22,15 +22,6 @@ $total   = $model->compterOffres($filtres);
 $nbPages = (int) ceil($total / $parPage);
 $offres  = $model->listerOffres($filtres, $page, $parPage);
 
-// Helper pour afficher le salaire
-function formatSalaire(?float $min, ?float $max): string
-{
-    if (!$min && !$max) return 'Salaire non précisé';
-    if ($min && $max)   return number_format($min, 0, ',', ' ') . ' – ' . number_format($max, 0, ',', ' ') . ' €';
-    if ($min)           return 'À partir de ' . number_format($min, 0, ',', ' ') . ' €';
-    return "Jusqu'à " . number_format($max, 0, ',', ' ') . ' €';
-}
-
 // Badge couleur selon le type de contrat
 function badgeContrat(string $type): string
 {
@@ -57,12 +48,25 @@ function badgeTeletravail(string $t): string
 // Formate la date relative
 function dateRelative(string $date): string
 {
-    $diff = time() - strtotime($date);
-    if ($diff < 86400)    return "Aujourd'hui";
-    if ($diff < 172800)   return "Hier";
-    if ($diff < 604800)   return "Il y a " . round($diff / 86400)  . " jours";
-    if ($diff < 2592000)  return "Il y a " . round($diff / 604800) . " semaines";
-    return "Il y a " . round($diff / 2592000) . " mois";
+    $jours = floor((time() - strtotime($date)) / 86400);
+
+    if ($jours == 0) {
+        return "Aujourd'hui";
+    }
+
+    if ($jours == 1) {
+        return "Hier";
+    }
+
+    if ($jours < 7) {
+        return "Il y a $jours jours";
+    }
+
+    if ($jours < 30) {
+        return "Il y a " . floor($jours / 7) . " semaines";
+    }
+
+    return "Il y a " . floor($jours / 30) . " mois";
 }
 
 // Construction de l'URL de pagination avec les filtres actifs
@@ -108,7 +112,7 @@ function urlPage(int $page): string
         <a href="logout.php" class="btn btn-publier">Déconnexion</a>
       <?php else: ?>
         <a href="login.php"            class="btn btn-connexion">Connexion</a>
-        <a href="register.php?role=recruteur" class="btn btn-publier">Publier une offre</a>
+        <a href="register.php?role=recruteur" class="btn btn-publier">Créer un compte</a>
       <?php endif; ?>
     </div>
   </div>
@@ -215,9 +219,13 @@ function urlPage(int $page): string
       </div>
     <?php else: ?>
 
+      
+        
+
     <ul class="offers-list">
+      
       <?php foreach ($offres as $i => $offre): ?>
-      <li>
+        <li>
         <article class="offer-card <?= $i === 0 ? 'featured' : '' ?>">
           <a href="offre.php?id=<?= $offre['id'] ?>" class="offer-link">
             <div class="d-flex align-items-start gap-3">
@@ -243,19 +251,19 @@ function urlPage(int $page): string
 
             <footer class="offer-footer">
               <span class="offer-location"><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= htmlspecialchars($offre['localisation']) ?></span>
-              <strong class="offer-salary"><?= formatSalaire($offre['salaire_min'], $offre['salaire_max']) ?></strong>
+              <strong class="offer-salary"><?= (int)$offre['salaire_min'] == 0 ? 'salaire non':(int)$offre['salaire_min'] ?> - <?= (int)$offre['salaire_max'] == 0 ? 'renseigné' : (int)$offre['salaire_max']?> <?=  (int)$offre['salaire_max'] == 0 ? ' ': '€'  ?></strong>
               <time class="offer-date" datetime="<?= $offre['date_publication'] ?>">
                 <?= dateRelative($offre['date_publication']) ?>
               </time>
             </footer>
+            
           </a>
         </article>
-      </li>
+      </li> 
+       
       <?php endforeach; ?>
+  </ul>
 
-
-
-    </ul>
 
     <!-- PAGINATION -->
     <?php if ($nbPages > 1): ?>
@@ -279,6 +287,44 @@ function urlPage(int $page): string
     <?php endif; ?>
   </section>
 </main>
+<footer class="site-footer">
+    <div class="container">
+
+        <div class="footer-grid">
+
+            <div>
+                <h3>SearchForAJob</h3>
+                <p>
+                    Trouvez rapidement les meilleures offres
+                    d'emploi partout en France.
+                </p>
+            </div>
+
+            <div>
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="#">Offres</a></li>
+                    <li><a href="#">Entreprises</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Contact</h4>
+                <p>contact@searchforajob.fr</p>
+                <p>+33 1 23 45 67 89</p>
+            </div>
+
+        </div>
+
+        <hr>
+
+        <p class="copyright">
+            © 2025 SearchForAJob - Tous droits réservés.
+        </p>
+
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/index.js"></script>

@@ -1,0 +1,169 @@
+ :root {
+     --blue-dark: #0C447C;
+     --blue-main: #185FA5;
+     --blue-light: #E6F1FB;
+     --text-muted: #6B7280;
+     --border: rgba(0, 0, 0, 0.10);
+     --bg-page: #F4F6F9;
+ }
+
+ body {
+     font-family: 'Segoe UI', system-ui, sans-serif;
+     background: var(--bg-page);
+     color: #1a1a2e;
+ }
+
+ nav.navbar {
+     background: #fff;
+     border-bottom: 1px solid var(--border);
+     height: 62px;
+ }
+
+ .navbar-brand {
+     font-size: 1.1rem;
+     font-weight: 600;
+     color: #1a1a2e !important;
+ }
+
+ .navbar-brand span {
+     color: var(--blue-main);
+ }
+
+ .btn-retour {
+     font-size: 0.85rem;
+     color: var(--text-muted);
+     text-decoration: none;
+     display: inline-flex;
+     align-items: center;
+     gap: 5px;
+ }
+
+ .btn-retour:hover {
+     color: var(--blue-main);
+ }
+
+ /* FORM CARD */
+ .form-card {
+     max-width: 720px;
+     margin: 2rem auto;
+     background: #fff;
+     border: 1px solid var(--border);
+     border-radius: 12px;
+     padding: 2rem;
+ }
+
+ .form-card h1 {
+     font-size: 1.3rem;
+     font-weight: 700;
+     margin-bottom: 0.25rem;
+ }
+
+ .form-card .subtitle {
+     font-size: 0.875rem;
+     color: var(--text-muted);
+     margin-bottom: 1.75rem;
+ }
+
+ /* CHAMPS */
+ .form-group {
+     margin-bottom: 1.25rem;
+ }
+
+ label.form-label {
+     font-size: 0.875rem;
+     font-weight: 500;
+     margin-bottom: 5px;
+     display: block;
+ }
+
+ .form-control,
+ .form-select {
+     font-size: 0.875rem;
+     border: 1px solid rgba(0, 0, 0, 0.15);
+     border-radius: 8px;
+     padding: 10px 12px;
+     width: 100%;
+     outline: none;
+     font-family: inherit;
+     background: #fff;
+     color: #1a1a2e;
+ }
+
+ .form-control:focus,
+ .form-select:focus {
+     border-color: var(--blue-main);
+     box-shadow: 0 0 0 3px rgba(24, 95, 165, .10);
+ }
+
+ textarea.form-control {
+     resize: vertical;
+     min-height: 140px;
+ }
+
+ /* SECTION TITRE */
+ .section-sep {
+     font-size: 0.75rem;
+     font-weight: 600;
+     color: var(--text-muted);
+     text-transform: uppercase;
+     letter-spacing: .05em;
+     margin: 1.75rem 0 1rem;
+     padding-bottom: 0.5rem;
+     border-bottom: 1px solid var(--border);
+ }
+
+ /* COMPETENCES CHECKBOXES */
+ .competences-grid {
+     display: grid;
+     grid-template-columns: repeat(3, 1fr);
+     gap: 8px;
+ }
+
+ .comp-check {
+     display: flex;
+     align-items: center;
+     gap: 7px;
+     background: #FAFAFA;
+     border: 1px solid var(--border);
+     border-radius: 7px;
+     padding: 7px 10px;
+     cursor: pointer;
+     font-size: 0.85rem;
+ }
+
+ .comp-check input {
+     accent-color: var(--blue-main);
+     cursor: pointer;
+ }
+
+ .comp-check:has(input:checked) {
+     background: var(--blue-light);
+     border-color: var(--blue-main);
+     color: var(--blue-main);
+     font-weight: 500;
+ }
+
+ /* BOUTON SOUMETTRE */
+ .btn-submit {
+     background: var(--blue-main);
+     color: #fff;
+     border: none;
+     border-radius: 8px;
+     padding: 12px 28px;
+     font-size: 0.95rem;
+     font-weight: 600;
+     cursor: pointer;
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+ }
+
+ .btn-submit:hover {
+     background: var(--blue-dark);
+ }
+
+ @media(max-width:600px) {
+     .competences-grid {
+         grid-template-columns: repeat(2, 1fr);
+     }
+ }
