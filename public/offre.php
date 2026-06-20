@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../src/Auth.php';
 require_once __DIR__ . '/../src/offreModel.php';
 require_once __DIR__ . '/../src/CandidatureModel.php';
+require_once __DIR__ . '/../src/helpers.php';
 
 $offreModel       = new OffreModel();
 $candidatureModel = new CandidatureModel();
@@ -41,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn() && currentRole() === '
             $erreur = 'Le fichier ne doit pas depasser 5 Mo.';
         } else {
             $nomFichier  = 'cv_' . currentUserId() . '_' . time() . '.' . $ext;
-            $destination = __DIR__ . '../assets/uploads/' . $nomFichier;
+            $destination = __DIR__ . '/../assets/uploads/' . $nomFichier;
             if (move_uploaded_file($file['tmp_name'], $destination)) {
                 $cvPath = $nomFichier;
             } else {
@@ -75,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn() && currentRole() === '
   <title><?= htmlspecialchars($offre['titre']) ?> — SearchForAJob</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
- <link rel="stylesheet" href="../assets/css/offre.css">
+  <link rel="stylesheet" href="../assets/css/Offre.css">
 </head>
 <body>
 
@@ -92,10 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn() && currentRole() === '
       <?php else: ?>
         <a href="dashboard-candidat.php" class="btn btn-connexion">Mes candidatures</a>
       <?php endif; ?>
-      <a href="logout.php" class="btn btn-publier">Deconnexion</a>
+      <a href="logout.php" class="btn btn-connexion">Deconnexion</a>
     <?php else: ?>
       <a href="login.php" class="btn btn-connexion">Connexion</a>
-      <a href="register.php" class="btn btn-publier">S inscrire</a>
+      <a href="register.php" class="btn btn-publier">S'inscrire</a>
     <?php endif; ?>
   </div>
 </nav>
@@ -198,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn() && currentRole() === '
         <i class="bi bi-cash info-icon"></i>
         <div>
           <div class="info-label">Salaire</div>
-          <div class="info-value"><?= $offre['salaire_min'] - $offre['salaire_max'] ?></div>
+          <div class="info-value"><?= formatSalaire((float)$offre['salaire_min'], (float)$offre['salaire_max']) ?></div>
         </div>
       </div>
 
@@ -276,6 +277,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn() && currentRole() === '
 
   </aside>
 </main>
+
+<?php require_once __DIR__ . '/../src/footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>

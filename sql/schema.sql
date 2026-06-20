@@ -132,6 +132,7 @@ CREATE TABLE offre_competence (
 CREATE TABLE candidature (
   candidat_id      INT UNSIGNED NOT NULL,
   offre_id         INT UNSIGNED NOT NULL,
+  cv_path          VARCHAR(255) DEFAULT NULL,
   lettre_motivation TEXT        DEFAULT NULL,
   statut           ENUM('En attente','Vue','Acceptee','Refusee') NOT NULL DEFAULT 'En attente',
   date_candidature DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -190,8 +191,3 @@ INSERT INTO candidature (candidat_id, offre_id, statut) VALUES
   (1, 1, 'En attente'),
   (1, 2, 'Vue'),
   (2, 1, 'Acceptee');
-
-
-
-  -- ajout un champ qui permet de televerser un cv
-  ALTER TABLE candidature ADD COLUMN cv_path VARCHAR(255) DEFAULT NULL;

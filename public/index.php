@@ -8,7 +8,8 @@ $model = new OffreModel();
 // Récupération des filtres depuis l'URL
 $filtres = [
     'q'           => trim($_GET['q']    ?? ''),
-    'ville'       => trim($_GET['ville'] ?? ''),
+    'adresse'     => trim($_GET['adresse'] ?? ''),
+    'rayon'       => (int) ($_GET['rayon'] ?? 10),
     'contrat'     => $_GET['contrat']     ?? [],
     'teletravail' => $_GET['teletravail'] ?? [],
     'experience'  => $_GET['xp']          ?? [],
@@ -22,52 +23,7 @@ $total   = $model->compterOffres($filtres);
 $nbPages = (int) ceil($total / $parPage);
 $offres  = $model->listerOffres($filtres, $page, $parPage);
 
-// Badge couleur selon le type de contrat
-function badgeContrat(string $type): string
-{
-    return match($type) {
-        'CDI'        => 'badge-blue',
-        'CDD'        => 'badge-blue',
-        'Stage'      => 'badge-amber',
-        'Alternance' => 'badge-amber',
-        'Freelance'  => 'badge-purple',
-        default      => 'badge-gray',
-    };
-}
-
-// Badge couleur selon le télétravail
-function badgeTeletravail(string $t): string
-{
-    return match($t) {
-        'Full remote' => 'badge-green',
-        'Hybride'     => 'badge-green',
-        default       => 'badge-amber',
-    };
-}
-
-// Formate la date relative
-function dateRelative(string $date): string
-{
-    $jours = floor((time() - strtotime($date)) / 86400);
-
-    if ($jours == 0) {
-        return "Aujourd'hui";
-    }
-
-    if ($jours == 1) {
-        return "Hier";
-    }
-
-    if ($jours < 7) {
-        return "Il y a $jours jours";
-    }
-
-    if ($jours < 30) {
-        return "Il y a " . floor($jours / 7) . " semaines";
-    }
-
-    return "Il y a " . floor($jours / 30) . " mois";
-}
+require_once __DIR__ . '/../src/helpers.php';
 
 // Construction de l'URL de pagination avec les filtres actifs
 function urlPage(int $page): string
@@ -112,7 +68,7 @@ function urlPage(int $page): string
         <a href="logout.php" class="btn btn-publier">Déconnexion</a>
       <?php else: ?>
         <a href="login.php"            class="btn btn-connexion">Connexion</a>
-        <a href="register.php?role=recruteur" class="btn btn-publier">Créer un compte</a>
+        <a href="register.php?role=recruteur" class="btn btn-publier">S'inscrire</a>
       <?php endif; ?>
     </div>
   </div>
@@ -121,27 +77,36 @@ function urlPage(int $page): string
 <!-- HERO -->
 <header class="hero">
   <h1>Trouvez votre prochain emploi</h1>
+
   <p><?= $total ?> offre<?= $total > 1 ? 's' : '' ?> disponible<?= $total > 1 ? 's' : '' ?> en ce moment</p>
+
   <form class="search-box" action="index.php" method="GET" role="search">
     <label for="search-q" class="visually-hidden">Rechercher</label>
     <input type="search" id="search-q" name="q"
            placeholder="Titre, compétence, mot-clé..."
-           value="<?= htmlspecialchars($filtres['q']) ?>" />
-    <label for="search-ville" class="visually-hidden">Ville</label>
-    <select id="search-ville" name="ville">
-      <option value="">Toute la France</option>
-      <?php foreach (['Paris','Lyon','Marseille','Bordeaux','Toulouse','Remote'] as $v): ?>
-        <option value="<?= $v ?>" <?= $filtres['ville'] === $v ? 'selected' : '' ?>><?= $v ?></option>
-      <?php endforeach; ?>
-    </select>
+           value="<?= htmlspecialchars($filtres['q']) ?>"
+           autocomplete="off" />
+    <?php if ($filtres['adresse']): ?>
+      <input type="hidden" name="adresse" value="<?= htmlspecialchars($filtres['adresse']) ?>" />
+      <input type="hidden" name="rayon" value="<?= (int) $filtres['rayon'] ?>" />
+    <?php endif; ?>
+    <?php if ($filtres['secteur']): ?>
+      <input type="hidden" name="secteur" value="<?= htmlspecialchars($filtres['secteur']) ?>" />
+    <?php endif; ?>
     <button type="submit"><i class="bi bi-search" aria-hidden="true"></i> Rechercher</button>
   </form>
+
 </header>
 
 <!-- STATS -->
 <section class="stats-bar" aria-label="Statistiques">
   <ul>
     <li><i class="bi bi-briefcase" aria-hidden="true"></i> <strong><?= $total ?></strong>&nbsp;offres actives</li>
+    <li>
+      <a href="offres-partenaires.php" style="font-size:0.8rem; color:var(--blue-main); text-decoration:none; display:flex; align-items:center; gap:5px;">
+        <i class="bi bi-broadcast"></i> Voir aussi les offres partenaires Adzuna
+      </a>
+    </li>
   </ul>
 </section>
 
@@ -188,6 +153,31 @@ function urlPage(int $page): string
 
       <hr class="filter-divider" />
 
+     <fieldset>
+  <legend>Localisation</legend>
+
+  <div class="form-group mb-3">
+    <label for="f-adresse" class="form-label" style="font-size:0.85rem;">Adresse, ville...</label>
+    <input type="text" class="form-control" name="adresse" id="f-adresse"
+           placeholder="Ex: Paris, 75001..."
+           value="<?= htmlspecialchars($filtres['adresse']) ?>" />
+  </div>
+
+  <div class="form-group">
+    <label for="f-rayon" class="form-label d-flex justify-content-between" style="font-size:0.85rem;">
+      <span>Rayon de recherche</span>
+      <span id="rayon-value" class="fw-bold" style="color:var(--blue-main);"><?= $filtres['rayon'] ?> km</span>
+    </label>
+    <input type="range" class="form-range" name="rayon" id="f-rayon"
+           min="0" max="100" step="5"
+           value="<?= $filtres['rayon'] ?>"
+           oninput="document.getElementById('rayon-value').textContent = this.value + ' km'" />
+    <div class="d-flex justify-content-between" style="font-size:0.7rem; color:var(--text-muted);">
+      <span>0 km</span><span>100 km</span>
+    </div>
+  </div>
+</fieldset>
+       <hr class="filter-divider" />
       <fieldset>
         <legend>Expérience</legend>
         <?php foreach (['Junior','Confirme','Senior'] as $x): ?>
@@ -198,6 +188,17 @@ function urlPage(int $page): string
             <label class="form-check-label" for="f-<?= strtolower($x) ?>"><?= $x ?></label>
           </div>
         <?php endforeach; ?>
+      </fieldset>
+
+      <hr class="filter-divider" />
+
+      <fieldset>
+        <legend>Secteur d'activité</legend>
+        <div class="form-group">
+          <input type="text" class="form-control" name="secteur" id="f-secteur"
+                 placeholder="Ex: Informatique, Finance..."
+                 value="<?= htmlspecialchars($filtres['secteur']) ?>" />
+        </div>
       </fieldset>
 
       <button type="submit" class="btn btn-publier w-100 mt-3">Appliquer</button>
@@ -219,13 +220,9 @@ function urlPage(int $page): string
       </div>
     <?php else: ?>
 
-      
-        
-
     <ul class="offers-list">
-      
       <?php foreach ($offres as $i => $offre): ?>
-        <li>
+      <li>
         <article class="offer-card <?= $i === 0 ? 'featured' : '' ?>">
           <a href="offre.php?id=<?= $offre['id'] ?>" class="offer-link">
             <div class="d-flex align-items-start gap-3">
@@ -251,19 +248,19 @@ function urlPage(int $page): string
 
             <footer class="offer-footer">
               <span class="offer-location"><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= htmlspecialchars($offre['localisation']) ?></span>
-              <strong class="offer-salary"><?= (int)$offre['salaire_min'] == 0 ? 'salaire non':(int)$offre['salaire_min'] ?> - <?= (int)$offre['salaire_max'] == 0 ? 'renseigné' : (int)$offre['salaire_max']?> <?=  (int)$offre['salaire_max'] == 0 ? ' ': '€'  ?></strong>
+              <strong class="offer-salary"><?= formatSalaire((float)$offre['salaire_min'], (float)$offre['salaire_max']) ?></strong>
               <time class="offer-date" datetime="<?= $offre['date_publication'] ?>">
                 <?= dateRelative($offre['date_publication']) ?>
               </time>
             </footer>
-            
           </a>
         </article>
-      </li> 
-       
+      </li>
       <?php endforeach; ?>
-  </ul>
 
+
+
+    </ul>
 
     <!-- PAGINATION -->
     <?php if ($nbPages > 1): ?>
@@ -287,44 +284,8 @@ function urlPage(int $page): string
     <?php endif; ?>
   </section>
 </main>
-<footer class="site-footer">
-    <div class="container">
 
-        <div class="footer-grid">
-
-            <div>
-                <h3>SearchForAJob</h3>
-                <p>
-                    Trouvez rapidement les meilleures offres
-                    d'emploi partout en France.
-                </p>
-            </div>
-
-            <div>
-                <h4>Navigation</h4>
-                <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="#">Offres</a></li>
-                    <li><a href="#">Entreprises</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Contact</h4>
-                <p>contact@searchforajob.fr</p>
-                <p>+33 1 23 45 67 89</p>
-            </div>
-
-        </div>
-
-        <hr>
-
-        <p class="copyright">
-            © 2025 SearchForAJob - Tous droits réservés.
-        </p>
-
-    </div>
-</footer>
+<?php require_once __DIR__ . '/../src/footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/index.js"></script>

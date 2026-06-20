@@ -80,6 +80,9 @@ function badgeStatut(string $statut): string
     Search<span>ForAJob</span>
   </a>
   <div class="ms-auto d-flex gap-2">
+    <a href="entreprise.php" class="btn-outline-sm">
+      <i class="bi bi-building"></i> Mon entreprise
+    </a>
     <a href="publier-offre.php" class="btn-publier">
       <i class="bi bi-plus-lg"></i> Publier une offre
     </a>
@@ -170,15 +173,20 @@ function badgeStatut(string $statut): string
             (<?= count($candidatures) ?> candidat<?= count($candidatures) > 1 ? 's' : '' ?>)
           </span>
         </h2>
-        <!-- Bouton supprimer l'offre -->
-        <form method="POST" action="dashboard-recruteur.php"
-              onsubmit="return confirm('Supprimer cette offre ?');">
-          <input type="hidden" name="action"   value="supprimer_offre" />
-          <input type="hidden" name="offre_id" value="<?= $offreSelectId ?>" />
-          <button type="submit" class="btn-danger-sm">
-            <i class="bi bi-trash"></i> Supprimer l offre
-          </button>
-        </form>
+        <!-- Bouton modifier / supprimer l'offre -->
+        <div class="d-flex gap-2">
+          <a href="modifier-offre.php?id=<?= $offreSelectId ?>" class="btn-outline-sm">
+            <i class="bi bi-pencil"></i> Modifier
+          </a>
+          <form method="POST" action="dashboard-recruteur.php"
+                onsubmit="return confirm('Supprimer cette offre ?');">
+            <input type="hidden" name="action"   value="supprimer_offre" />
+            <input type="hidden" name="offre_id" value="<?= $offreSelectId ?>" />
+            <button type="submit" class="btn-danger-sm">
+              <i class="bi bi-trash"></i> Supprimer l offre
+            </button>
+          </form>
+        </div>
       </div>
 
       <?php if (empty($candidatures)): ?>
@@ -247,7 +255,7 @@ function badgeStatut(string $statut): string
 
           // Lettre de motivation
           if ($lettre) {
-              echo "<button class='doc-btn' onclick='toggleLettre('.$lettreId.')'>
+              echo "<button class='doc-btn' onclick=\"toggleLettre('$lettreId')\">
                       <i class='bi bi-file-text'></i>
                       <span>Lettre de motivation</span>
                     </button>";

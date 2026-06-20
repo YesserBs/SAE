@@ -42,9 +42,8 @@
      color: var(--blue-main);
  }
 
- /* FORM CARD */
  .form-card {
-     max-width: 720px;
+     max-width: 640px;
      margin: 2rem auto;
      background: #fff;
      border: 1px solid var(--border);
@@ -64,7 +63,6 @@
      margin-bottom: 1.75rem;
  }
 
- /* CHAMPS */
  .form-group {
      margin-bottom: 1.25rem;
  }
@@ -76,8 +74,7 @@
      display: block;
  }
 
- .form-control,
- .form-select {
+ .form-control {
      font-size: 0.875rem;
      border: 1px solid rgba(0, 0, 0, 0.15);
      border-radius: 8px;
@@ -89,61 +86,16 @@
      color: #1a1a2e;
  }
 
- .form-control:focus,
- .form-select:focus {
+ .form-control:focus {
      border-color: var(--blue-main);
      box-shadow: 0 0 0 3px rgba(24, 95, 165, .10);
  }
 
  textarea.form-control {
      resize: vertical;
-     min-height: 140px;
+     min-height: 120px;
  }
 
- /* SECTION TITRE */
- .section-sep {
-     font-size: 0.75rem;
-     font-weight: 600;
-     color: var(--text-muted);
-     text-transform: uppercase;
-     letter-spacing: .05em;
-     margin: 1.75rem 0 1rem;
-     padding-bottom: 0.5rem;
-     border-bottom: 1px solid var(--border);
- }
-
- /* COMPETENCES CHECKBOXES */
- .competences-grid {
-     display: grid;
-     grid-template-columns: repeat(3, 1fr);
-     gap: 8px;
- }
-
- .comp-check {
-     display: flex;
-     align-items: center;
-     gap: 7px;
-     background: #FAFAFA;
-     border: 1px solid var(--border);
-     border-radius: 7px;
-     padding: 7px 10px;
-     cursor: pointer;
-     font-size: 0.85rem;
- }
-
- .comp-check input {
-     accent-color: var(--blue-main);
-     cursor: pointer;
- }
-
- .comp-check:has(input:checked) {
-     background: var(--blue-light);
-     border-color: var(--blue-main);
-     color: var(--blue-main);
-     font-weight: 500;
- }
-
- /* BOUTON SOUMETTRE */
  .btn-submit {
      background: var(--blue-main);
      color: #fff;
@@ -160,10 +112,4 @@
 
  .btn-submit:hover {
      background: var(--blue-dark);
- }
-
- @media(max-width:600px) {
-     .competences-grid {
-         grid-template-columns: repeat(2, 1fr);
-     }
  }
