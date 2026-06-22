@@ -8,7 +8,8 @@ $model = new OffreModel();
 // Récupération des filtres depuis l'URL
 $filtres = [
     'q'           => trim($_GET['q']    ?? ''),
-    'ville'       => trim($_GET['ville'] ?? ''),
+    'adresse'     => trim($_GET['adresse'] ?? ''),
+    'rayon'       => (int) ($_GET['rayon'] ?? 10),
     'contrat'     => $_GET['contrat']     ?? [],
     'teletravail' => $_GET['teletravail'] ?? [],
     'experience'  => $_GET['xp']          ?? [],
@@ -22,48 +23,7 @@ $total   = $model->compterOffres($filtres);
 $nbPages = (int) ceil($total / $parPage);
 $offres  = $model->listerOffres($filtres, $page, $parPage);
 
-// Helper pour afficher le salaire
-function formatSalaire(?float $min, ?float $max): string
-{
-    if (!$min && !$max) return 'Salaire non précisé';
-    if ($min && $max)   return number_format($min, 0, ',', ' ') . ' – ' . number_format($max, 0, ',', ' ') . ' €';
-    if ($min)           return 'À partir de ' . number_format($min, 0, ',', ' ') . ' €';
-    return "Jusqu'à " . number_format($max, 0, ',', ' ') . ' €';
-}
-
-// Badge couleur selon le type de contrat
-function badgeContrat(string $type): string
-{
-    return match($type) {
-        'CDI'        => 'badge-blue',
-        'CDD'        => 'badge-blue',
-        'Stage'      => 'badge-amber',
-        'Alternance' => 'badge-amber',
-        'Freelance'  => 'badge-purple',
-        default      => 'badge-gray',
-    };
-}
-
-// Badge couleur selon le télétravail
-function badgeTeletravail(string $t): string
-{
-    return match($t) {
-        'Full remote' => 'badge-green',
-        'Hybride'     => 'badge-green',
-        default       => 'badge-amber',
-    };
-}
-
-// Formate la date relative
-function dateRelative(string $date): string
-{
-    $diff = time() - strtotime($date);
-    if ($diff < 86400)    return "Aujourd'hui";
-    if ($diff < 172800)   return "Hier";
-    if ($diff < 604800)   return "Il y a " . round($diff / 86400)  . " jours";
-    if ($diff < 2592000)  return "Il y a " . round($diff / 604800) . " semaines";
-    return "Il y a " . round($diff / 2592000) . " mois";
-}
+require_once __DIR__ . '/../src/helpers.php';
 
 // Construction de l'URL de pagination avec les filtres actifs
 function urlPage(int $page): string
@@ -95,9 +55,19 @@ function urlPage(int $page): string
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navMenu">
-    <ul class="navbar-nav mx-auto">
-      <li class="nav-item"><a class="nav-link active" href="index.php">Offres</a></li>
-    </ul>
+  <ul class="navbar-nav mx-auto gap-4">
+    <li class="nav-item">
+      <a class="nav-link active" href="../public/index.php">Offres internes</a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link active" href="../backend/">Offres externes</a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link active" href="../scrap/">Explorer avec l’IA</a>
+    </li>
+  </ul>
     <div class="d-flex gap-2">
       <?php if (isLoggedIn()): ?>
         <?php if (currentRole() === 'recruteur'): ?>
@@ -108,7 +78,7 @@ function urlPage(int $page): string
         <a href="logout.php" class="btn btn-publier">Déconnexion</a>
       <?php else: ?>
         <a href="login.php"            class="btn btn-connexion">Connexion</a>
-        <a href="register.php?role=recruteur" class="btn btn-publier">Publier une offre</a>
+        <a href="register.php?role=recruteur" class="btn btn-publier">S'inscrire</a>
       <?php endif; ?>
     </div>
   </div>
@@ -117,27 +87,36 @@ function urlPage(int $page): string
 <!-- HERO -->
 <header class="hero">
   <h1>Trouvez votre prochain emploi</h1>
+
   <p><?= $total ?> offre<?= $total > 1 ? 's' : '' ?> disponible<?= $total > 1 ? 's' : '' ?> en ce moment</p>
+
   <form class="search-box" action="index.php" method="GET" role="search">
     <label for="search-q" class="visually-hidden">Rechercher</label>
     <input type="search" id="search-q" name="q"
            placeholder="Titre, compétence, mot-clé..."
-           value="<?= htmlspecialchars($filtres['q']) ?>" />
-    <label for="search-ville" class="visually-hidden">Ville</label>
-    <select id="search-ville" name="ville">
-      <option value="">Toute la France</option>
-      <?php foreach (['Paris','Lyon','Marseille','Bordeaux','Toulouse','Remote'] as $v): ?>
-        <option value="<?= $v ?>" <?= $filtres['ville'] === $v ? 'selected' : '' ?>><?= $v ?></option>
-      <?php endforeach; ?>
-    </select>
+           value="<?= htmlspecialchars($filtres['q']) ?>"
+           autocomplete="off" />
+    <?php if ($filtres['adresse']): ?>
+      <input type="hidden" name="adresse" value="<?= htmlspecialchars($filtres['adresse']) ?>" />
+      <input type="hidden" name="rayon" value="<?= (int) $filtres['rayon'] ?>" />
+    <?php endif; ?>
+    <?php if ($filtres['secteur']): ?>
+      <input type="hidden" name="secteur" value="<?= htmlspecialchars($filtres['secteur']) ?>" />
+    <?php endif; ?>
     <button type="submit"><i class="bi bi-search" aria-hidden="true"></i> Rechercher</button>
   </form>
+
 </header>
 
 <!-- STATS -->
 <section class="stats-bar" aria-label="Statistiques">
   <ul>
     <li><i class="bi bi-briefcase" aria-hidden="true"></i> <strong><?= $total ?></strong>&nbsp;offres actives</li>
+    <li>
+      <a href="offres-partenaires.php" style="font-size:0.8rem; color:var(--blue-main); text-decoration:none; display:flex; align-items:center; gap:5px;">
+        <i class="bi bi-broadcast"></i> Voir aussi les offres partenaires Adzuna
+      </a>
+    </li>
   </ul>
 </section>
 
@@ -184,6 +163,31 @@ function urlPage(int $page): string
 
       <hr class="filter-divider" />
 
+     <fieldset>
+  <legend>Localisation</legend>
+
+  <div class="form-group mb-3">
+    <label for="f-adresse" class="form-label" style="font-size:0.85rem;">Adresse, ville...</label>
+    <input type="text" class="form-control" name="adresse" id="f-adresse"
+           placeholder="Ex: Paris, 75001..."
+           value="<?= htmlspecialchars($filtres['adresse']) ?>" />
+  </div>
+
+  <div class="form-group">
+    <label for="f-rayon" class="form-label d-flex justify-content-between" style="font-size:0.85rem;">
+      <span>Rayon de recherche</span>
+      <span id="rayon-value" class="fw-bold" style="color:var(--blue-main);"><?= $filtres['rayon'] ?> km</span>
+    </label>
+    <input type="range" class="form-range" name="rayon" id="f-rayon"
+           min="0" max="100" step="5"
+           value="<?= $filtres['rayon'] ?>"
+           oninput="document.getElementById('rayon-value').textContent = this.value + ' km'" />
+    <div class="d-flex justify-content-between" style="font-size:0.7rem; color:var(--text-muted);">
+      <span>0 km</span><span>100 km</span>
+    </div>
+  </div>
+</fieldset>
+       <hr class="filter-divider" />
       <fieldset>
         <legend>Expérience</legend>
         <?php foreach (['Junior','Confirme','Senior'] as $x): ?>
@@ -194,6 +198,17 @@ function urlPage(int $page): string
             <label class="form-check-label" for="f-<?= strtolower($x) ?>"><?= $x ?></label>
           </div>
         <?php endforeach; ?>
+      </fieldset>
+
+      <hr class="filter-divider" />
+
+      <fieldset>
+        <legend>Secteur d'activité</legend>
+        <div class="form-group">
+          <input type="text" class="form-control" name="secteur" id="f-secteur"
+                 placeholder="Ex: Informatique, Finance..."
+                 value="<?= htmlspecialchars($filtres['secteur']) ?>" />
+        </div>
       </fieldset>
 
       <button type="submit" class="btn btn-publier w-100 mt-3">Appliquer</button>
@@ -243,7 +258,7 @@ function urlPage(int $page): string
 
             <footer class="offer-footer">
               <span class="offer-location"><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= htmlspecialchars($offre['localisation']) ?></span>
-              <strong class="offer-salary"><?= formatSalaire($offre['salaire_min'], $offre['salaire_max']) ?></strong>
+              <strong class="offer-salary"><?= formatSalaire((float)$offre['salaire_min'], (float)$offre['salaire_max']) ?></strong>
               <time class="offer-date" datetime="<?= $offre['date_publication'] ?>">
                 <?= dateRelative($offre['date_publication']) ?>
               </time>
@@ -279,6 +294,8 @@ function urlPage(int $page): string
     <?php endif; ?>
   </section>
 </main>
+
+<?php require_once __DIR__ . '/../src/footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/index.js"></script>

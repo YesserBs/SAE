@@ -2,3 +2,5 @@
 config/database.php
 # ignorer le fichier .env
 backend/.env
+
+backend/vendor/

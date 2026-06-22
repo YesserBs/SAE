@@ -1,0 +1,238 @@
+:root {
+  --blue-dark: #0C447C;
+  --blue-main: #185FA5;
+  --blue-light: #E6F1FB;
+  --text-muted: #6B7280;
+  --border: rgba(0, 0, 0, 0.10);
+  --bg-page: #F4F6F9;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-page);
+  color: #1a1a2e;
+}
+
+nav.navbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  height: 62px;
+}
+
+.navbar-brand {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a2e !important;
+}
+
+.navbar-brand span {
+  color: var(--blue-main);
+}
+
+.btn-retour {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-retour:hover {
+  color: var(--blue-main);
+}
+
+.form-card {
+  max-width: 720px;
+  margin: 2rem auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.form-card h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.form-card .subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+label.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.form-control,.form-select {
+  font-size: 0.875rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+  background: #fff;
+  color: #1a1a2e;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--blue-main);
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, .10);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.section-sep {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 1.75rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Compétences dynamiques ── */
+#competences-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.competence-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.competence-row input {
+  flex: 1;
+  font-size: 0.875rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 9px 12px;
+  outline: none;
+  font-family: inherit;
+  background: #fff;
+  color: #1a1a2e;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.competence-row input:focus {
+  border-color: var(--blue-main);
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, .10);
+}
+
+.competence-row input::placeholder {
+  color: #9CA3AF;
+}
+
+.btn-remove-comp {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #FCA5A5;
+  border-radius: 8px;
+  background: #FEF2F2;
+  color: #B91C1C;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  font-size: 0.9rem;
+}
+
+.btn-remove-comp:hover {
+  background: #FEE2E2;
+}
+
+.btn-remove-comp:disabled {
+  opacity: .3;
+  cursor: default;
+  border-color: var(--border);
+  background: #fff;
+  color: var(--text-muted);
+}
+
+.btn-add-comp {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--blue-main);
+  background: var(--blue-light);
+  border: 1px dashed var(--blue-main);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: inherit;
+}
+
+.btn-add-comp:hover {
+  background: #D1E8F8;
+}
+
+.comp-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* ── Boutons bas de formulaire ── */
+.btn-submit {
+  background: var(--blue-main);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-submit:hover {
+  background: var(--blue-dark);
+}
+
+@media(max-width:600px) {
+  .row.g-3>div {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}

@@ -17,6 +17,8 @@ class OffreModel
     // --------------------------------------------------------
     public function listerOffres(array $filtres = [], int $page = 1, int $parPage = 10): array
     {
+        [$where, $params] = $this->construireFiltres($filtres);
+
         $sql = "
             SELECT o.id, o.titre, o.localisation, o.type_contrat,
                    o.teletravail, o.experience, o.salaire_min, o.salaire_max,
@@ -24,17 +26,62 @@ class OffreModel
                    e.nom AS entreprise_nom, e.ville AS entreprise_ville, e.logo_path
             FROM offre o
             INNER JOIN entreprise e ON e.id = o.entreprise_id
-            WHERE o.is_active = 1
+            WHERE o.is_active = 1 $where
         ";
+
+        $sql .= " ORDER BY o.date_publication DESC";
+
+        // LIMIT et OFFSET castés en int directement dans la chaîne SQL :
+        // pas de risque d'injection (valeurs contrôlées), et évite le bug
+        // de PDO avec ATTR_EMULATE_PREPARES=false sur MariaDB/XAMPP.
+        $limit  = max(1, (int) $parPage);
+        $offset = max(0, (int) (($page - 1) * $parPage));
+        $sql .= " LIMIT $limit OFFSET $offset";
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    // --------------------------------------------------------
+    //  COMPTER (pour la pagination)
+    // --------------------------------------------------------
+    public function compterOffres(array $filtres = []): int
+    {
+        [$where, $params] = $this->construireFiltres($filtres);
+
+        $sql = "SELECT COUNT(*) FROM offre o INNER JOIN entreprise e ON e.id = o.entreprise_id WHERE o.is_active = 1 $where";
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
+
+    // --------------------------------------------------------
+    //  Construit la clause WHERE + les paramètres à partir des
+    //  filtres reçus. Utilisée à la fois par listerOffres() et
+    //  compterOffres() pour garantir que le total affiché et la
+    //  liste réellement renvoyée correspondent toujours.
+    // --------------------------------------------------------
+    private function construireFiltres(array $filtres): array
+    {
+        $sql    = '';
         $params = [];
 
         if (!empty($filtres['q'])) {
             $sql .= " AND o.titre LIKE :q";
             $params[':q'] = '%' . $filtres['q'] . '%';
         }
-        if (!empty($filtres['ville'])) {
-            $sql .= " AND o.localisation LIKE :ville";
-            $params[':ville'] = '%' . $filtres['ville'] . '%';
+        if (!empty($filtres['adresse'])) {
+            $sql .= " AND o.localisation LIKE :adresse";
+            $params[':adresse'] = '%' . $filtres['adresse'] . '%';
         }
         if (!empty($filtres['contrat']) && is_array($filtres['contrat'])) {
             $ph = [];
@@ -62,43 +109,7 @@ class OffreModel
             $params[':secteur'] = '%' . $filtres['secteur'] . '%';
         }
 
-        $sql .= " ORDER BY o.date_publication DESC";
-        $sql .= " LIMIT :limit OFFSET :offset";
-
-        $stmt = $this->pdo->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v, PDO::PARAM_STR);
-        }
-        $stmt->bindValue(':limit',  $parPage,           PDO::PARAM_INT);
-        $stmt->bindValue(':offset', ($page - 1) * $parPage, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
-    }
-
-    // --------------------------------------------------------
-    //  COMPTER (pour la pagination)
-    // --------------------------------------------------------
-    public function compterOffres(array $filtres = []): int
-    {
-        $sql    = "SELECT COUNT(*) FROM offre o INNER JOIN entreprise e ON e.id = o.entreprise_id WHERE o.is_active = 1";
-        $params = [];
-
-        if (!empty($filtres['q'])) {
-            $sql .= " AND o.titre LIKE :q";
-            $params[':q'] = '%' . $filtres['q'] . '%';
-        }
-        if (!empty($filtres['ville'])) {
-            $sql .= " AND o.localisation LIKE :ville";
-            $params[':ville'] = '%' . $filtres['ville'] . '%';
-        }
-
-        $stmt = $this->pdo->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-        return (int) $stmt->fetchColumn();
+        return [$sql, $params];
     }
 
     // --------------------------------------------------------
@@ -179,15 +190,93 @@ class OffreModel
     }
 
     // --------------------------------------------------------
-    //  SUPPRIMER (désactivation logique)
+    //  Récupère une offre appartenant bien au recruteur connecté
+    //  (avec ses compétences), pour pré-remplir le formulaire
+    //  de modification. Retourne null si l'offre n'existe pas
+    //  ou n'appartient pas à ce recruteur.
+    // --------------------------------------------------------
+    public function getOffreForRecruteur(int $id, int $recruteurId): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT o.*
+            FROM offre o
+            INNER JOIN entreprise e ON e.id = o.entreprise_id
+            WHERE o.id = :id AND e.recruteur_id = :rid
+        ");
+        $stmt->execute([':id' => $id, ':rid' => $recruteurId]);
+        $offre = $stmt->fetch();
+        if (!$offre) return null;
+
+        // On récupère les libellés (texte) en plus des ids,
+        // pour pouvoir pré-remplir les inputs texte dans le formulaire.
+        $stmtC = $this->pdo->prepare("
+            SELECT c.id, c.libelle
+            FROM competence c
+            INNER JOIN offre_competence oc ON oc.competence_id = c.id
+            WHERE oc.offre_id = :id
+            ORDER BY c.libelle
+        ");
+        $stmtC->execute([':id' => $id]);
+        $rows = $stmtC->fetchAll();
+        $offre['competences']         = array_column($rows, 'id');
+        $offre['competences_libelles'] = array_column($rows, 'libelle');
+
+        return $offre;
+    }
+
+    // --------------------------------------------------------
+    //  MODIFIER une offre existante (vérifie l'appartenance
+    //  au recruteur connecté via la jointure entreprise).
+    // --------------------------------------------------------
+    public function modifierOffre(int $id, int $recruteurId, array $data): bool
+    {
+        // UPDATE ... INNER JOIN n'est pas supporté de façon fiable sur toutes
+        // les versions de MariaDB/XAMPP — on utilise une sous-requête à la place.
+        $stmt = $this->pdo->prepare("
+            UPDATE offre
+            SET titre = :titre, description = :description, localisation = :localisation,
+                type_contrat = :type_contrat, teletravail = :teletravail, experience = :experience,
+                salaire_min = :salaire_min, salaire_max = :salaire_max
+            WHERE id = :id
+              AND entreprise_id IN (
+                  SELECT id FROM entreprise WHERE recruteur_id = :rid
+              )
+        ");
+        $stmt->execute([
+            ':titre'        => $data['titre'],
+            ':description'  => $data['description'],
+            ':localisation' => $data['localisation'],
+            ':type_contrat' => $data['type_contrat'],
+            ':teletravail'  => $data['teletravail'],
+            ':experience'   => $data['experience'],
+            ':salaire_min'  => $data['salaire_min'] ?? null,
+            ':salaire_max'  => $data['salaire_max'] ?? null,
+            ':id'           => $id,
+            ':rid'          => $recruteurId,
+        ]);
+
+        if (isset($data['competences'])) {
+            $this->attacherCompetences($id, $data['competences']);
+        }
+
+        return true;
+    }
+
+    // --------------------------------------------------------
+    //  SUPPRIMER une offre (suppression physique).
+    //  Les FK ON DELETE CASCADE dans le schéma suppriment
+    //  automatiquement les candidatures et offre_competence liées.
+    //  La sous-requête garantit qu'un recruteur ne peut supprimer
+    //  que ses propres offres.
     // --------------------------------------------------------
     public function supprimerOffre(int $id, int $recruteurId): bool
     {
         $stmt = $this->pdo->prepare("
-            UPDATE offre o
-            INNER JOIN entreprise e ON e.id = o.entreprise_id
-            SET o.is_active = 0
-            WHERE o.id = :id AND e.recruteur_id = :rid
+            DELETE FROM offre
+            WHERE id = :id
+              AND entreprise_id IN (
+                  SELECT id FROM entreprise WHERE recruteur_id = :rid
+              )
         ");
         $stmt->execute([':id' => $id, ':rid' => $recruteurId]);
         return $stmt->rowCount() > 0;
@@ -212,6 +301,47 @@ class OffreModel
         $ins = $this->pdo->prepare("INSERT INTO offre_competence (offre_id, competence_id) VALUES (:oid, :cid)");
         foreach ($ids as $cid) {
             $ins->execute([':oid' => $offreId, ':cid' => (int) $cid]);
+        }
+    }
+
+    // --------------------------------------------------------
+    //  Attache des compétences à partir de libellés texte libres.
+    //  Si la compétence n'existe pas encore en base, elle est créée
+    //  automatiquement (INSERT IGNORE), puis liée à l'offre.
+    //  Les libellés vides ou en double (insensible à la casse)
+    //  sont ignorés.
+    // --------------------------------------------------------
+    public function attacherCompetencesParLibelle(int $offreId, array $libelles): void
+    {
+        // Nettoyage : on déduplique en insensible à la casse, on retire les vides
+        $vus     = [];
+        $propres = [];
+        foreach ($libelles as $l) {
+            $l = trim($l);
+            if ($l === '') continue;
+            $key = mb_strtolower($l);
+            if (isset($vus[$key])) continue;
+            $vus[$key]  = true;
+            $propres[]  = $l;
+        }
+
+        // Vide les compétences actuelles de cette offre
+        $del = $this->pdo->prepare("DELETE FROM offre_competence WHERE offre_id = :id");
+        $del->execute([':id' => $offreId]);
+
+        if (empty($propres)) return;
+
+        $upsert = $this->pdo->prepare("INSERT IGNORE INTO competence (libelle) VALUES (:lib)");
+        $getId  = $this->pdo->prepare("SELECT id FROM competence WHERE libelle = :lib");
+        $ins    = $this->pdo->prepare("INSERT IGNORE INTO offre_competence (offre_id, competence_id) VALUES (:oid, :cid)");
+
+        foreach ($propres as $lib) {
+            $upsert->execute([':lib' => $lib]);
+            $getId->execute([':lib' => $lib]);
+            $cid = (int) $getId->fetchColumn();
+            if ($cid) {
+                $ins->execute([':oid' => $offreId, ':cid' => $cid]);
+            }
         }
     }
 }
