@@ -55,9 +55,19 @@ function urlPage(int $page): string
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navMenu">
-    <ul class="navbar-nav mx-auto">
-      <li class="nav-item"><a class="nav-link active" href="index.php">Offres</a></li>
-    </ul>
+  <ul class="navbar-nav mx-auto gap-4">
+    <li class="nav-item">
+      <a class="nav-link active" href="../public/index.php">Offres internes</a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link active" href="../backend/">Offres externes</a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link active" href="../scrap/">Explorer avec l’IA</a>
+    </li>
+  </ul>
     <div class="d-flex gap-2">
       <?php if (isLoggedIn()): ?>
         <?php if (currentRole() === 'recruteur'): ?>

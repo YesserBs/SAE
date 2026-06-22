@@ -427,203 +427,373 @@ foreach (['url', 'country', 'page', 'results_per_page', 'what', 'where', 'what_a
 
 ?>
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Console API Adzuna — SearchForAJob</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/api-dashboard.css" />
+  <title>Offres externes — SearchForAJob</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+<link rel="stylesheet" href="../assets/css/index.css" />
+<link rel="stylesheet" href="../assets/css/api-dashboard.css?v=2" />
 </head>
+
 <body class="api-page">
-<div class="api-shell">
-  <nav class="api-topbar">
-    <a class="brand" href="../public/index.php"><i class="bi bi-briefcase-fill"></i> Search<span>ForAJob</span></a>
-    <div class="api-topbar-actions">
-      <a href="../public/index.php" class="api-btn api-btn-ghost">Retour au site</a>
-      <a href="#results" class="api-btn api-btn-primary">Voir les résultats</a>
-    </div>
-  </nav>
 
-  <header class="api-hero card-surface">
-    <div class="api-hero-grid">
-      <div>
-        <div class="eyebrow">Console Adzuna complète</div>
-        <h1>Rechercher, filtrer, prévisualiser et importer des offres depuis l API.</h1>
-        <p>Cette page sert de cockpit pour piloter l API Adzuna: recherche avancée, lecture de la réponse brute, import unitaire, import global et préparation des données en base MySQL.</p>
-        <div class="chip-row">
-          <span class="chip">Recherche avancée</span>
-          <span class="chip">Import unitaire</span>
-          <span class="chip">Import global</span>
-          <span class="chip">JSON brut</span>
-        </div>
-      </div>
-      <div class="stats-grid stats-grid-3">
-        <div class="stat-box"><span>Résultats</span><strong><?= e($total) ?></strong></div>
-        <div class="stat-box"><span>Page</span><strong><?= e($criteria['page']) ?> / <?= e($pageCount) ?></strong></div>
-        <div class="stat-box"><span>Moyenne</span><strong><?= e($meanSalary !== null ? number_format((float) $meanSalary, 0, ',', ' ') . ' €' : 'N/D') ?></strong></div>
-      </div>
-    </div>
-  </header>
+<!-- NAVIGATION IDENTIQUE AU SITE -->
+<nav class="navbar navbar-expand-lg sticky-top px-3">
+  <a class="navbar-brand d-flex align-items-center gap-2" href="../public/index.php">
+    <i class="bi bi-briefcase-fill" style="color:var(--blue-main);font-size:1.2rem;" aria-hidden="true"></i>
+    Search<span>ForAJob</span>
+  </a>
 
-  <div class="api-toolbar">
-    <button type="button" id="copy-url-btn" class="api-btn api-btn-ghost"><i class="bi bi-clipboard"></i> Copier l URL</button>
-    <form method="post" class="m-0">
-      <input type="hidden" name="action" value="import_all" />
-      <?= $importFields ?>
-      <button type="submit" class="api-btn api-btn-primary"><i class="bi bi-lightning-charge"></i> Importer toute la page</button>
-    </form>
+  <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Menu">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navMenu">
+    <ul class="navbar-nav mx-auto gap-4">
+      <li class="nav-item">
+        <a class="nav-link active" href="../public/index.php">Offres internes</a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link active" href="../backend/api.php">Offres externes</a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link active" href="../scrap/">Explorer avec l’IA</a>
+      </li>
+    </ul>
+
+    <div class="d-flex gap-2">
+      <a href="#results" class="btn btn-connexion">Voir les résultats</a>
+      <a href="../public/index.php" class="btn btn-publier">Retour au site</a>
+    </div>
   </div>
+</nav>
 
-  <?php if ($flashError !== ''): ?>
-    <div class="alert alert-danger api-alert"><?= e($flashError) ?></div>
-  <?php endif; ?>
+<!-- HERO API -->
+<header class="api-hero">
+  <div class="api-hero-content">
+    <div>
+      <span class="api-eyebrow">Offres externes</span>
+      <h1>Explorez les offres récupérées depuis l’API Adzuna</h1>
+      <p>
+        Recherchez des offres provenant de sources externes, filtrez les résultats,
+        prévisualisez les données et importez les opportunités utiles dans votre plateforme.
+      </p>
 
-  <?php if ($flashSuccess !== ''): ?>
-    <div class="alert alert-success api-alert"><?= e($flashSuccess) ?></div>
-  <?php endif; ?>
-
-  <main class="api-grid">
-    <aside class="card-surface api-form">
-      <h2>Recherche avancée</h2>
-      <form method="get" action="api.php">
+      <form class="api-search-box" method="get" action="api.php">
         <input type="hidden" name="page" value="1" />
 
+        <input
+          type="search"
+          name="what"
+          value="<?= e($criteria['what']) ?>"
+          placeholder="Métier, compétence, mot-clé..."
+        />
+
+        <input
+          type="search"
+          name="where"
+          value="<?= e($criteria['where']) ?>"
+          placeholder="Ville, région..."
+        />
+
+        <button type="submit">
+          <i class="bi bi-search"></i>
+          Rechercher
+        </button>
+      </form>
+    </div>
+
+    <div class="api-hero-stats">
+      <div class="api-stat-card">
+        <span>Résultats</span>
+        <strong><?= e(number_format($total, 0, ',', ' ')) ?></strong>
+      </div>
+
+      <div class="api-stat-card">
+        <span>Page</span>
+        <strong><?= e($criteria['page']) ?> / <?= e($pageCount) ?></strong>
+      </div>
+
+      <div class="api-stat-card">
+        <span>Salaire moyen</span>
+        <strong><?= e($meanSalary !== null ? number_format((float) $meanSalary, 0, ',', ' ') . ' €' : 'N/D') ?></strong>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- BARRE D'INFOS -->
+<section class="api-stats-bar">
+  <ul>
+    <li>
+      <i class="bi bi-broadcast"></i>
+      <strong><?= e(count($jobs)) ?></strong>&nbsp;offres chargées depuis l’API
+    </li>
+
+    <li>
+      <i class="bi bi-database-down"></i>
+      Import possible dans la base locale
+    </li>
+
+    <li>
+      <a href="#advanced-search">
+        <i class="bi bi-sliders"></i>
+        Recherche avancée
+      </a>
+    </li>
+  </ul>
+</section>
+
+<main class="api-main-layout">
+
+  <!-- FILTRES API -->
+  <aside class="api-filters" id="advanced-search" aria-label="Recherche avancée">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Recherche avancée</h2>
+      <a href="api.php" class="api-reset-link">Réinitialiser</a>
+    </div>
+
+    <form method="get" action="api.php">
+      <input type="hidden" name="page" value="1" />
+
+      <fieldset>
+        <legend>Recherche principale</legend>
+
         <div class="mb-3">
-          <label for="what" class="form-label">Mot-clé principal</label>
-          <input type="text" class="form-control" id="what" name="what" value="<?= e($criteria['what']) ?>" placeholder="developer, php, react..." />
+          <label for="what" class="form-label">Mot-clé</label>
+          <input type="text" class="form-control" id="what" name="what" value="<?= e($criteria['what']) ?>" placeholder="developer, vendeur, marketing..." />
         </div>
 
         <div class="mb-3">
           <label for="where" class="form-label">Localisation</label>
           <input type="text" class="form-control" id="where" name="where" value="<?= e($criteria['where']) ?>" placeholder="Paris, Lyon, Remote..." />
         </div>
+      </fieldset>
+
+      <hr class="filter-divider" />
+
+      <fieldset>
+        <legend>Paramètres API</legend>
 
         <div class="row g-2 mb-3">
           <div class="col-6">
             <label for="country" class="form-label">Pays</label>
             <input type="text" class="form-control" id="country" name="country" value="<?= e($criteria['country']) ?>" />
           </div>
+
           <div class="col-6">
-            <label for="page" class="form-label">Page</label>
-            <input type="number" class="form-control" id="page" name="page" min="1" value="<?= e($criteria['page']) ?>" />
+            <label for="results_per_page" class="form-label">Résultats</label>
+            <input type="number" class="form-control" id="results_per_page" name="results_per_page" min="1" max="50" value="<?= e($criteria['results_per_page']) ?>" />
           </div>
         </div>
+
+        <div class="mb-3">
+          <label for="sort_by" class="form-label">Tri</label>
+          <select class="form-select" id="sort_by" name="sort_by">
+            <?php foreach (['' => 'Automatique', 'relevance' => 'Pertinence', 'date' => 'Date', 'salary' => 'Salaire'] as $value => $label): ?>
+              <option value="<?= e($value) ?>" <?= $criteria['sort_by'] === $value ? 'selected' : '' ?>>
+                <?= e($label) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      </fieldset>
+
+      <hr class="filter-divider" />
+
+      <fieldset>
+        <legend>Recherche détaillée</legend>
+
+        <div class="mb-2">
+          <label class="form-label" for="what_phrase">Expression exacte</label>
+          <input type="text" class="form-control" id="what_phrase" name="what_phrase" value="<?= e($criteria['what_phrase']) ?>" />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label" for="what_and">Tous les mots</label>
+          <input type="text" class="form-control" id="what_and" name="what_and" value="<?= e($criteria['what_and']) ?>" />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label" for="what_or">Au moins un mot</label>
+          <input type="text" class="form-control" id="what_or" name="what_or" value="<?= e($criteria['what_or']) ?>" />
+        </div>
+
+        <div>
+          <label class="form-label" for="what_exclude">Mots exclus</label>
+          <input type="text" class="form-control" id="what_exclude" name="what_exclude" value="<?= e($criteria['what_exclude']) ?>" />
+        </div>
+      </fieldset>
+
+      <hr class="filter-divider" />
+
+      <fieldset>
+        <legend>Filtres emploi</legend>
 
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label for="results_per_page" class="form-label">Résultats / page</label>
-            <input type="number" class="form-control" id="results_per_page" name="results_per_page" min="1" max="50" value="<?= e($criteria['results_per_page']) ?>" />
+            <label class="form-label" for="salary_min">Salaire min</label>
+            <input type="number" class="form-control" id="salary_min" name="salary_min" value="<?= e($criteria['salary_min']) ?>" />
           </div>
+
           <div class="col-6">
-            <label for="sort_by" class="form-label">Tri</label>
-            <select class="form-select" id="sort_by" name="sort_by">
-              <?php foreach (['' => 'Auto', 'relevance' => 'Pertinence', 'date' => 'Date', 'salary' => 'Salaire'] as $value => $label): ?>
-                <option value="<?= e($value) ?>" <?= $criteria['sort_by'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
-              <?php endforeach; ?>
-            </select>
+            <label class="form-label" for="salary_max">Salaire max</label>
+            <input type="number" class="form-control" id="salary_max" name="salary_max" value="<?= e($criteria['salary_max']) ?>" />
           </div>
         </div>
 
-        <fieldset>
-          <legend>Recherche sémantique</legend>
-          <div class="mb-2"><label class="form-label" for="what_phrase">Expression exacte</label><input type="text" class="form-control" id="what_phrase" name="what_phrase" value="<?= e($criteria['what_phrase']) ?>" /></div>
-          <div class="mb-2"><label class="form-label" for="what_and">Tous les mots</label><input type="text" class="form-control" id="what_and" name="what_and" value="<?= e($criteria['what_and']) ?>" /></div>
-          <div class="mb-2"><label class="form-label" for="what_or">Au moins un mot</label><input type="text" class="form-control" id="what_or" name="what_or" value="<?= e($criteria['what_or']) ?>" /></div>
-          <div><label class="form-label" for="what_exclude">Mots exclus</label><input type="text" class="form-control" id="what_exclude" name="what_exclude" value="<?= e($criteria['what_exclude']) ?>" /></div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Filtres emploi</legend>
-          <div class="row g-2 mb-2">
-            <div class="col-6"><label class="form-label" for="salary_min">Salaire min</label><input type="number" class="form-control" id="salary_min" name="salary_min" value="<?= e($criteria['salary_min']) ?>" /></div>
-            <div class="col-6"><label class="form-label" for="salary_max">Salaire max</label><input type="number" class="form-control" id="salary_max" name="salary_max" value="<?= e($criteria['salary_max']) ?>" /></div>
-          </div>
-          <div class="form-check"><input class="form-check-input" type="checkbox" name="full_time" value="1" id="full_time" <?= !empty($criteria['full_time']) ? 'checked' : '' ?> /><label class="form-check-label" for="full_time">Temps plein</label></div>
-          <div class="form-check"><input class="form-check-input" type="checkbox" name="part_time" value="1" id="part_time" <?= !empty($criteria['part_time']) ? 'checked' : '' ?> /><label class="form-check-label" for="part_time">Temps partiel</label></div>
-          <div class="form-check"><input class="form-check-input" type="checkbox" name="contract" value="1" id="contract" <?= !empty($criteria['contract']) ? 'checked' : '' ?> /><label class="form-check-label" for="contract">Contrat</label></div>
-          <div class="form-check"><input class="form-check-input" type="checkbox" name="permanent" value="1" id="permanent" <?= !empty($criteria['permanent']) ? 'checked' : '' ?> /><label class="form-check-label" for="permanent">Permanent</label></div>
-          <div class="form-check"><input class="form-check-input" type="checkbox" name="salary_include_unknown" value="1" id="salary_include_unknown" <?= !empty($criteria['salary_include_unknown']) ? 'checked' : '' ?> /><label class="form-check-label" for="salary_include_unknown">Inclure salaires inconnus</label></div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Paramètres complémentaires</legend>
-          <div class="mb-2"><label class="form-label" for="category">Catégorie</label><input type="text" class="form-control" id="category" name="category" value="<?= e($criteria['category']) ?>" /></div>
-          <div class="mb-2"><label class="form-label" for="distance">Distance</label><input type="number" class="form-control" id="distance" name="distance" value="<?= e($criteria['distance']) ?>" /></div>
-          <div class="mb-2"><label class="form-label" for="company">Entreprise</label><input type="text" class="form-control" id="company" name="company" value="<?= e($criteria['company']) ?>" /></div>
-        </fieldset>
-
-        <button type="submit" class="api-btn api-btn-primary w-100 justify-content-center">Lancer la recherche</button>
-      </form>
-    </aside>
-
-    <section id="results" class="api-results">
-      <div class="card-surface p-3 mb-3">
-        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-          <div>
-            <h2 class="mb-2">Résultats</h2>
-            <div class="api-chip-row">
-              <span class="chip">URL prête</span>
-              <span class="chip"><?= e((string) count($jobs)) ?> résultats chargés</span>
-              <span class="chip">API JSON</span>
-            </div>
-          </div>
-          <div class="api-chip-row">
-            <?php foreach ($activeChips as $chip): ?>
-              <span class="chip"><?= e($chip) ?></span>
-            <?php endforeach; ?>
-          </div>
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="full_time" value="1" id="full_time" <?= !empty($criteria['full_time']) ? 'checked' : '' ?> />
+          <label class="form-check-label" for="full_time">Temps plein</label>
         </div>
-        <div class="api-url-box mt-3"><code id="api-url-text"><?= e($apiUrl) ?></code></div>
+
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="part_time" value="1" id="part_time" <?= !empty($criteria['part_time']) ? 'checked' : '' ?> />
+          <label class="form-check-label" for="part_time">Temps partiel</label>
+        </div>
+
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="contract" value="1" id="contract" <?= !empty($criteria['contract']) ? 'checked' : '' ?> />
+          <label class="form-check-label" for="contract">Contrat</label>
+        </div>
+
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="permanent" value="1" id="permanent" <?= !empty($criteria['permanent']) ? 'checked' : '' ?> />
+          <label class="form-check-label" for="permanent">Permanent</label>
+        </div>
+
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="salary_include_unknown" value="1" id="salary_include_unknown" <?= !empty($criteria['salary_include_unknown']) ? 'checked' : '' ?> />
+          <label class="form-check-label" for="salary_include_unknown">Inclure salaires inconnus</label>
+        </div>
+      </fieldset>
+
+      <hr class="filter-divider" />
+
+      <fieldset>
+        <legend>Compléments</legend>
+
+        <div class="mb-2">
+          <label class="form-label" for="category">Catégorie</label>
+          <input type="text" class="form-control" id="category" name="category" value="<?= e($criteria['category']) ?>" />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label" for="distance">Distance</label>
+          <input type="number" class="form-control" id="distance" name="distance" value="<?= e($criteria['distance']) ?>" />
+        </div>
+
+        <div>
+          <label class="form-label" for="company">Entreprise</label>
+          <input type="text" class="form-control" id="company" name="company" value="<?= e($criteria['company']) ?>" />
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-publier w-100 mt-3">
+        Appliquer
+      </button>
+    </form>
+  </aside>
+
+  <!-- RÉSULTATS -->
+  <section class="api-offers" id="results" aria-label="Résultats API">
+
+    <?php if ($flashError !== ''): ?>
+      <div class="alert alert-danger api-alert"><?= e($flashError) ?></div>
+    <?php endif; ?>
+
+    <?php if ($flashSuccess !== ''): ?>
+      <div class="alert alert-success api-alert"><?= e($flashSuccess) ?></div>
+    <?php endif; ?>
+
+    <div class="api-results-header">
+      <div>
+        <h2><?= e(number_format($total, 0, ',', ' ')) ?> offre<?= $total > 1 ? 's' : '' ?> externe<?= $total > 1 ? 's' : '' ?> trouvée<?= $total > 1 ? 's' : '' ?></h2>
+        <p>Résultats récupérés depuis Adzuna</p>
       </div>
 
-      <div class="card-surface p-3 mb-3">
-        <h2>Résumé</h2>
-        <div class="stats-grid stats-grid-4 mt-3">
-          <div class="stat-box"><span>Total API</span><strong><?= e(number_format((int) ($apiData['count'] ?? $total), 0, ',', ' ')) ?></strong></div>
-          <div class="stat-box"><span>Page</span><strong><?= e($criteria['page']) ?></strong></div>
-          <div class="stat-box"><span>Par page</span><strong><?= e($criteria['results_per_page']) ?></strong></div>
-          <div class="stat-box"><span>Moyenne</span><strong><?= e($meanSalary !== null ? number_format((float) $meanSalary, 0, ',', ' ') . ' €' : 'N/D') ?></strong></div>
-        </div>
-      </div>
+      <div class="api-header-actions">
+        <button type="button" id="copy-url-btn" class="btn btn-connexion">
+          <i class="bi bi-clipboard"></i>
+          Copier l’URL
+        </button>
 
-      <?php if (empty($jobs)): ?>
-        <div class="card-surface p-4 text-center">
-          <i class="bi bi-inbox fs-1 d-block mb-2" style="color:var(--api-accent);"></i>
-          <h2>Aucun résultat</h2>
-          <p class="mb-0 text-secondary">Aucune offre ne correspond à la requête courante.</p>
-        </div>
-      <?php else: ?>
-        <div class="results-list">
-          <?php foreach ($jobs as $index => $job): ?>
+        <form method="post" class="m-0">
+          <input type="hidden" name="action" value="import_all" />
+          <?= $importFields ?>
+          <button type="submit" class="btn btn-publier">
+            <i class="bi bi-cloud-download"></i>
+            Importer la page
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <?php if (!empty($activeChips)): ?>
+      <div class="api-active-filters">
+        <?php foreach ($activeChips as $chip): ?>
+          <span class="badge badge-blue"><?= e($chip) ?></span>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
+    <div class="api-url-card">
+      <span>URL API générée</span>
+      <code id="api-url-text"><?= e($apiUrl) ?></code>
+    </div>
+
+    <?php if (empty($jobs)): ?>
+      <div class="empty-state api-empty-state">
+        <i class="bi bi-search"></i>
+        <p>Aucune offre externe ne correspond à votre recherche.</p>
+        <a href="api.php" class="btn btn-publier mt-2">Réinitialiser la recherche</a>
+      </div>
+    <?php else: ?>
+
+      <ul class="api-offers-list">
+        <?php foreach ($jobs as $index => $job): ?>
+          <li>
             <?= renderJobCard(is_array($job) ? $job : [], (int) $index, $criteria) ?>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
 
-      <?php if ($pageCount > 1): ?>
-        <div class="card-surface p-3 mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div class="text-secondary">Pagination</div>
-          <div class="d-flex gap-2 flex-wrap">
-            <?php for ($i = max(1, (int) $criteria['page'] - 2); $i <= min($pageCount, (int) $criteria['page'] + 2); $i++): ?>
-              <a class="api-btn <?= $i === (int) $criteria['page'] ? 'api-btn-primary' : 'api-btn-ghost' ?>" href="?<?= e(http_build_query(array_merge($criteria, ['page' => $i]))) ?>"><?= e($i) ?></a>
-            <?php endfor; ?>
-          </div>
-        </div>
-      <?php endif; ?>
+    <?php endif; ?>
 
-      <div class="card-surface p-3 mt-3">
-        <h2>Réponse brute</h2>
-        <details>
-          <summary class="text-primary fw-semibold">Afficher le JSON complet</summary>
-          <pre class="api-json-box mt-3"><?= e(json_encode($apiData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></pre>
-        </details>
-      </div>
-    </section>
-  </main>
-</div>
+    <?php if ($pageCount > 1): ?>
+      <nav class="pagination-nav mt-4" aria-label="Pagination">
+        <ul class="pagination justify-content-center flex-wrap gap-1">
+          <?php for ($i = max(1, (int) $criteria['page'] - 2); $i <= min($pageCount, (int) $criteria['page'] + 2); $i++): ?>
+            <li class="page-item <?= $i === (int) $criteria['page'] ? 'active' : '' ?>">
+              <a class="page-link" href="?<?= e(http_build_query(array_merge($criteria, ['page' => $i]))) ?>">
+                <?= e($i) ?>
+              </a>
+            </li>
+          <?php endfor; ?>
+        </ul>
+      </nav>
+    <?php endif; ?>
+
+    <div class="api-json-card">
+      <details>
+        <summary>Afficher la réponse JSON complète</summary>
+        <pre><?= e(json_encode($apiData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></pre>
+      </details>
+    </div>
+
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
   const copyButton = document.getElementById('copy-url-btn');
@@ -636,13 +806,15 @@ foreach (['url', 'country', 'page', 'results_per_page', 'what', 'where', 'what_a
     try {
       await navigator.clipboard.writeText(url);
       copyButton.innerHTML = '<i class="bi bi-check2"></i> URL copiée';
+
       setTimeout(() => {
-        copyButton.innerHTML = '<i class="bi bi-clipboard"></i> Copier l URL';
+        copyButton.innerHTML = '<i class="bi bi-clipboard"></i> Copier l’URL';
       }, 1800);
     } catch (error) {
-      alert('Impossible de copier l URL.');
+      alert('Impossible de copier l’URL.');
     }
   });
 </script>
+
 </body>
 </html>
