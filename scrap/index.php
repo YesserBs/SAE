@@ -83,12 +83,46 @@ if ($confidence >= 75) {
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>SAE Scrap Assistant — Analyse guidée du backend</title>
+	<title>Explorer avec l’IA — SearchForAJob</title>
+
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-	<link rel="stylesheet" href="../assets/css/scrap.css" />
+
+	<link rel="stylesheet" href="../assets/css/index.css" />
+	<link rel="stylesheet" href="../assets/css/scrap.css?v=2" />
 </head>
 <body class="scrap-page">
+	<nav class="navbar navbar-expand-lg sticky-top px-3">
+  <a class="navbar-brand d-flex align-items-center gap-2" href="../public/index.php">
+    <i class="bi bi-briefcase-fill" style="color:var(--blue-main);font-size:1.2rem;" aria-hidden="true"></i>
+    Search<span>ForAJob</span>
+  </a>
+
+  <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Menu">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navMenu">
+    <ul class="navbar-nav mx-auto gap-4">
+      <li class="nav-item">
+        <a class="nav-link active" href="../public/index.php">Offres internes</a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link active" href="../backend/">Offres externes</a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link active" href="">Explorer avec l’IA</a>
+      </li>
+    </ul>
+
+    <div class="d-flex gap-2">
+      <a href="#analysis-form" class="btn btn-connexion">Démarrer</a>
+      <a href="../public/index.php" class="btn btn-publier">Retour au site</a>
+    </div>
+  </div>
+</nav>
 	<main class="scrap-shell">
 		<section class="hero-panel">
 			<div class="hero-copy">
