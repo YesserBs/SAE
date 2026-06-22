@@ -425,7 +425,9 @@ foreach (['url', 'country', 'page', 'results_per_page', 'what', 'where', 'what_a
     $importFields .= hiddenField($field, $criteria[$field] ?? '');
 }
 
-?><!DOCTYPE html>
+?>
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
